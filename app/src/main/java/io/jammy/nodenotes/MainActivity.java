@@ -8,6 +8,16 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import java.util.List;
+import java.util.Locale;
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,6 +34,39 @@ public class MainActivity extends AppCompatActivity {
       public void onClick(View view) {
         Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
             .setAction("Action", null).show();
+      }
+    });
+
+    // Set up logging interceptor for debug
+    HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+    interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+    OkHttpClient client = new OkHttpClient.Builder().addInterceptor(interceptor).build();
+
+    // Load all notes
+    Retrofit retrofit = new Retrofit.Builder()
+        .baseUrl("http://192.168.0.14:8000")
+        .client(client)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build();
+
+    Api service = retrofit.create(Api.class);
+
+    Call<List<Note>> repos = service.listAllNotes();
+
+    repos.enqueue(new Callback<List<Note>>() {
+      @Override
+      public void onResponse(Call<List<Note>> call, Response<List<Note>> response) {
+
+        Timber.i(String.format(Locale.getDefault(), "onResponse::%s", response.toString()));
+
+        for (Note note : response.body()) {
+          Timber.v(String.format(Locale.getDefault(), "> Note [%s : %s : %s]", note.getId(), note.getTitle(), note.getText()));
+        }
+      }
+
+      @Override
+      public void onFailure(Call<List<Note>> call, Throwable t) {
+        Timber.e(String.format(Locale.getDefault(), "> Error [%s]", t.getMessage()));
       }
     });
   }
