@@ -50,14 +50,14 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.setIcon(R.drawable.ic_add_24dp);
         alertDialog.setCancelable(false);
 
-        final EditText titleEditText = (EditText) view.findViewById(R.id.title_input);
-        final EditText bodyEditText = (EditText) view.findViewById(R.id.body_input);
+        final EditText titleEditText = (EditText) dialogView.findViewById(R.id.title_input);
+        final EditText bodyEditText = (EditText) dialogView.findViewById(R.id.body_input);
 
         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
 
-            service.createNote("New Note Title", "New Note Body")
+            service.createNote(titleEditText.getText().toString(), bodyEditText.getText().toString())
                 .enqueue(new Callback<Note>() {
 
                   @Override
