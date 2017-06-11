@@ -4,7 +4,6 @@ import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,11 +12,11 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
 
   private List<Note> mDataset = new ArrayList<>();
 
-  public void setDataset(List<Note> mDataset) {
+  public NotesAdapter(List<Note> mDataset) {
     this.mDataset = mDataset;
   }
 
-  public NotesAdapter(List<Note> mDataset) {
+  public void setDataset(List<Note> mDataset) {
     this.mDataset = mDataset;
   }
 
@@ -50,7 +49,18 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
 
   public void addItem(Note noteToAdd) {
     mDataset.add(noteToAdd);
-    notifyItemInserted(mDataset.size()-1);
+    notifyItemInserted(mDataset.size() - 1);
+  }
+
+  public Note removeItem(int position) {
+
+    Note removedNote = mDataset.get(position);
+
+    mDataset.remove(position);
+    notifyItemRemoved(position);
+    notifyItemRangeChanged(position, getItemCount());
+
+    return removedNote;
   }
 
   // Provide a reference to the views for each data item
