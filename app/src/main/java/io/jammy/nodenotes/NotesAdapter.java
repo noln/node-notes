@@ -48,6 +48,11 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
     return mDataset.size();
   }
 
+  public void addItem(Note noteToAdd) {
+    mDataset.add(noteToAdd);
+    notifyItemInserted(mDataset.size()-1);
+  }
+
   // Provide a reference to the views for each data item
   // Complex data items may need more than one view per item, and
   // you provide access to all the views for a data item in a view holder

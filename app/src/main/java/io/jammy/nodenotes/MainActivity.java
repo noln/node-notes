@@ -1,8 +1,10 @@
 package io.jammy.nodenotes;
 
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -10,6 +12,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import okhttp3.OkHttpClient;
@@ -23,8 +27,9 @@ import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
 
+  Api service;
   private RecyclerView mRecyclerView;
-  private RecyclerView.Adapter mAdapter;
+  private NotesAdapter mAdapter;
   private RecyclerView.LayoutManager mLayoutManager;
 
   @Override
@@ -38,12 +43,54 @@ public class MainActivity extends AppCompatActivity {
     fab.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
-        Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-            .setAction("Action", null).show();
+
+        final View dialogView = getLayoutInflater().inflate(R.layout.input_dialog, null);
+        AlertDialog alertDialog = new AlertDialog.Builder(view.getContext()).create();
+        alertDialog.setTitle("Create a Note");
+        alertDialog.setIcon(R.drawable.ic_add_24dp);
+        alertDialog.setCancelable(false);
+
+        final EditText titleEditText = (EditText) view.findViewById(R.id.title_input);
+        final EditText bodyEditText = (EditText) view.findViewById(R.id.body_input);
+
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+
+            service.createNote("New Note Title", "New Note Body")
+                .enqueue(new Callback<Note>() {
+
+                  @Override
+                  public void onResponse(Call<Note> call, Response<Note> response) {
+                    try {
+                      Timber.d(String.format(Locale.getDefault(), "Note Created [%s : %s : %s]", response.body().getId(), response.body().getTitle(), response.body().getText()));
+                      mAdapter.addItem(response.body());
+                    }
+                    catch (Exception e) {
+                      Timber.d("Note created, but with some empty fields");
+                    }
+                  }
+
+                  @Override
+                  public void onFailure(Call<Note> call, Throwable t) {
+                    Timber.d(String.format(Locale.getDefault(), "onFailure :: %s", t.getMessage()));
+                  }
+                });
+          }
+        });
+
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel", new OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            dialog.dismiss();
+          }
+        });
+
+        alertDialog.setView(dialogView);
+        alertDialog.show();
       }
+
     });
-
-
 
     // Set up the recyclerview
     mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
@@ -56,6 +103,9 @@ public class MainActivity extends AppCompatActivity {
     mLayoutManager = new LinearLayoutManager(this);
     mRecyclerView.setLayoutManager(mLayoutManager);
 
+    // Set up adapter
+    mAdapter = new NotesAdapter(new ArrayList<Note>());
+    mRecyclerView.setAdapter(mAdapter);
 
     // Set up logging interceptor for debug
     HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
@@ -69,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
         .addConverterFactory(GsonConverterFactory.create())
         .build();
 
-    Api service = retrofit.create(Api.class);
+    service = retrofit.create(Api.class);
 
     Call<List<Note>> repos = service.listAllNotes();
 
@@ -82,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
         for (Note note : response.body()) {
           Timber.v(String.format(Locale.getDefault(), "> Note [%s : %s : %s]", note.getId(), note.getTitle(), note.getText()));
 
-          mRecyclerView.setAdapter(new NotesAdapter(response.body()));
+          mAdapter.addItem(note);
         }
       }
 
