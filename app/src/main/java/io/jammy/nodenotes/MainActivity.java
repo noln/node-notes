@@ -6,17 +6,19 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.hudomju.swipe.OnItemClickListener;
 import com.hudomju.swipe.SwipeToDismissTouchListener;
 import com.hudomju.swipe.SwipeableItemClickListener;
@@ -44,10 +46,10 @@ public class MainActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
-    Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+    Toolbar toolbar = findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
 
-    FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+    FloatingActionButton fab = findViewById(R.id.fab);
     fab.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
@@ -58,8 +60,8 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.setIcon(R.drawable.ic_add_24dp);
         alertDialog.setCancelable(false);
 
-        final EditText titleEditText = (EditText) dialogView.findViewById(R.id.title_input);
-        final EditText bodyEditText = (EditText) dialogView.findViewById(R.id.body_input);
+        final EditText titleEditText = dialogView.findViewById(R.id.title_input);
+        final EditText bodyEditText = dialogView.findViewById(R.id.body_input);
 
         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new OnClickListener() {
           @Override
@@ -101,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
     });
 
     // Set up the recyclerview
-    mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
+    mRecyclerView = findViewById(R.id.my_recycler_view);
 
     // use this setting to improve performance if you know that changes
     // in content do not change the layout size of the RecyclerView
@@ -182,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Load all notes
     Retrofit retrofit = new Retrofit.Builder()
-        .baseUrl("http://192.168.0.14:8000")
+        .baseUrl("http://192.168.0.18:8000")
         .client(client)
         .addConverterFactory(GsonConverterFactory.create())
         .build();
@@ -195,10 +197,10 @@ public class MainActivity extends AppCompatActivity {
       @Override
       public void onResponse(Call<List<Note>> call, Response<List<Note>> response) {
 
-        Timber.i(String.format(Locale.getDefault(), "onResponse::%s", response.toString()));
+        Timber.i("onResponse::%s", response.toString());
 
         for (Note note : response.body()) {
-          Timber.v(String.format(Locale.getDefault(), "> Note [%s : %s : %s]", note.getId(), note.getTitle(), note.getText()));
+          Timber.v("::> Note [%s : %s : %s]", note.getId(), note.getTitle(), note.getText());
 
           mAdapter.addItem(note);
         }
@@ -206,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
 
       @Override
       public void onFailure(Call<List<Note>> call, Throwable t) {
-        Timber.e(String.format(Locale.getDefault(), "> Error [%s]", t.getMessage()));
+        Timber.e("> Error [%s]", t.getMessage());
       }
     });
   }
